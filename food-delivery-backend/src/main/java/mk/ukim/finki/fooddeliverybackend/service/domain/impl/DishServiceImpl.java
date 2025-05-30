@@ -1,18 +1,13 @@
 package mk.ukim.finki.fooddeliverybackend.service.domain.impl;
 
-import mk.ukim.finki.fooddeliverybackend.dto.domain.CreateDishDto;
-import mk.ukim.finki.fooddeliverybackend.dto.domain.DisplayDishDto;
 import mk.ukim.finki.fooddeliverybackend.model.domain.Dish;
 import mk.ukim.finki.fooddeliverybackend.model.domain.Order;
-import mk.ukim.finki.fooddeliverybackend.model.domain.Restaurant;
 import mk.ukim.finki.fooddeliverybackend.model.exceptions.DishOutOfStockException;
-import mk.ukim.finki.fooddeliverybackend.model.exceptions.RestaurantNotFoundException;
 import mk.ukim.finki.fooddeliverybackend.repository.DishRepository;
 import mk.ukim.finki.fooddeliverybackend.repository.OrderRepository;
 import mk.ukim.finki.fooddeliverybackend.service.domain.DishService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +24,6 @@ public class DishServiceImpl implements DishService {
 
     @Override
     public List<Dish> findAll() {
-
         return dishRepository.findAll();
     }
 
@@ -40,33 +34,45 @@ public class DishServiceImpl implements DishService {
 
     @Override
     public Dish save(Dish dish) {
-
-
         return dishRepository.save(dish);
     }
 
     @Override
     public Optional<Dish> update(Long id, Dish dish) {
-        // TODO: Implement this.
-        return Optional.empty();
+        return findById(id)
+                .map(existingMenuItem -> {
+                    existingMenuItem.setName(dish.getName());
+                    existingMenuItem.setDescription(dish.getDescription());
+                    existingMenuItem.setPrice(dish.getPrice());
+                    existingMenuItem.setQuantity(dish.getQuantity());
+                    existingMenuItem.setRestaurant(dish.getRestaurant());
+                    return dishRepository.save(existingMenuItem);
+                });
     }
 
     @Override
     public Optional<Dish> deleteById(Long id) {
-        // TODO: Implement this.
-        return Optional.empty();
+        Optional<Dish> dish = findById(id);
+        dish.ifPresent(dishRepository::delete);
+        return dish;
     }
 
     @Override
     public Order addToOrder(Dish dish, Order order) {
-        // TODO: Implement this.
-        return null;
+        if (dish.getQuantity() <= 0)
+            throw new DishOutOfStockException(dish.getId());
+        dish.decreaseQuantity();
+        dishRepository.save(dish);
+        order.getDishes().add(dish);
+        return orderRepository.save(order);
     }
 
     @Override
     public Order removeFromOrder(Dish dish, Order order) {
-        // TODO: Implement this.
-        return null;
+        dish.increaseQuantity();
+        dishRepository.save(dish);
+        order.getDishes().remove(dish);
+        return orderRepository.save(order);
     }
 
 }

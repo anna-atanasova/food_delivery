@@ -28,8 +28,7 @@ public class DishController {
 
     @GetMapping
     public ResponseEntity<List<DisplayDishDto>> findAll() {
-        // TODO: Implement this.
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(dishApplicationService.findAll());
     }
 
     @GetMapping("/{id}")

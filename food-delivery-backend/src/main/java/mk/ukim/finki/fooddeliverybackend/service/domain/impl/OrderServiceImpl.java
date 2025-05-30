@@ -36,26 +36,44 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Optional<Order> findPending(String username) {
-        // TODO: Implement this.
-        return Optional.empty();
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
+        return orderRepository
+                .findByUserAndStatus(user, OrderStatus.PENDING);
     }
 
     @Override
     public Order findOrCreatePending(String username) {
-        // TODO: Implement this.
-        return null;
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
+        return findPending(username)
+                .orElseGet(() -> orderRepository.save(new Order(user)));
     }
 
     @Override
     public Optional<Order> confirm(String username) {
-        // TODO: Implement this.
-        return Optional.empty();
+        Optional<Order> order = findPending(username);
+        if (order.isPresent() && order.get().getDishes().isEmpty())
+            throw new EmptyOrderException();
+        return order
+                .map(o -> {
+                    o.confirm();
+                    return orderRepository.save(o);
+                });
     }
 
     @Override
     public Optional<Order> cancel(String username) {
-        // TODO: Implement this.
-        return Optional.empty();
+        Optional<Order> order = findPending(username);
+        if (order.isPresent() && order.get().getDishes().isEmpty())
+            throw new EmptyOrderException();
+        return order
+                .map(o -> {
+                    o.cancel();
+                    return orderRepository.save(o);
+                });
     }
 
 }
