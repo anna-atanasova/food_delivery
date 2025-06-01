@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
     Button,
     Dialog,
@@ -11,10 +11,29 @@ import {
 } from "@mui/material";
 import useRestaurants from "../../../../hooks/useRestaurants.js";
 
+const initialFormData = {
+    "name": "",
+    "description": "",
+    "price": "",
+    "quantity": "",
+    "restaurantId": "",
+}
+
 const AddDishDialog = ({open, onClose, onAdd}) => {
     const restaurants = useRestaurants();
 
-    // TODO: Implement this.
+    const [formData, setFormData] = useState(initialFormData);
+
+    const handleChange = (event) => {
+        const {name, value} = event.target;
+        setFormData({...formData, [name]: value});
+    };
+
+    const handleSubmit = () => {
+        onAdd(formData);
+        setFormData(initialFormData);
+        onClose();
+    };
 
     return (
         <Dialog open={open} onClose={onClose}>
