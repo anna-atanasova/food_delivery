@@ -4,18 +4,32 @@ import orderRepository from "../repository/orderRepository.js";
 const useOrder = () => {
     const [order, setOrder] = useState(null);
 
-    // TODO: Implement this.
-    const fetchPendingOrder = () => {};
+    const fetchPendingOrder = useCallback(() => {
+        setOrder(null);
+        orderRepository
+            .findPending()
+            .then((response) => setOrder(response.data))
+            .catch((error) => console.log(error));
+    }, []);
 
-    // TODO: Implement this.
-    const confirmPendingOrder = () => {};
+    const confirmPendingOrder = useCallback(() => {
+        console.log("confirm");
+        orderRepository
+            .confirmPendingOrder()
+            .then(() => fetchPendingOrder())
+            .catch((error) => console.log(error));
+    }, [fetchPendingOrder]);
 
-    // TODO: Implement this.
-    const cancelPendingOrder = () => {};
+    const cancelPendingOrder = useCallback(() => {
+        orderRepository
+            .cancelPendingOrder()
+            .then(() => fetchPendingOrder())
+            .catch((error) => console.log(error));
+    }, [fetchPendingOrder]);
 
     useEffect(() => {
-        // TODO: Implement this.
-    }, []);
+        fetchPendingOrder();
+    }, [fetchPendingOrder]);
 
     return {order, fetchPendingOrder, confirmPendingOrder, cancelPendingOrder};
 };
